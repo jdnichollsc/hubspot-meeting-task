@@ -58,11 +58,3 @@ npm run lint
 # Fix linting issues
 npm run lint:fix
 ```
-
-## 📝 License
-
-MIT
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. 
