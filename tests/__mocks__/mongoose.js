@@ -14,12 +14,12 @@ class Schema {
 
 Schema.Types = {
   ObjectId: String,
-  String: String,
-  Number: Number,
-  Boolean: Boolean,
-  Date: Date,
+  String,
+  Number,
+  Boolean,
+  Date,
   Mixed: Object,
-  Array: Array
+  Array
 };
 
 module.exports = {
@@ -27,4 +27,4 @@ module.exports = {
   model: jest.fn(),
   connect: jest.fn(),
   Types: Schema.Types
-}; 
+};

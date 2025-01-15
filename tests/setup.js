@@ -5,7 +5,7 @@ process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
 
 // Mock mongoose
 const mockMongoose = {
-  Schema: function() {
+  Schema: function () {
     return {
       add: jest.fn()
     };
@@ -14,12 +14,12 @@ const mockMongoose = {
   connect: jest.fn(),
   Types: {
     ObjectId: String,
-    String: String,
-    Number: Number,
-    Boolean: Boolean,
-    Date: Date,
+    String,
+    Number,
+    Boolean,
+    Date,
     Mixed: Object,
-    Array: Array
+    Array
   }
 };
 
@@ -29,11 +29,13 @@ jest.mock('mongoose', () => mockMongoose);
 
 // Mock async
 jest.mock('async', () => ({
-  queue: jest.fn((worker, concurrency) => ({
-    push: jest.fn(),
-    drain: jest.fn().mockResolvedValue(true),
-    length: () => 0
-  }))
+  queue: (callback) => ({
+    push: (task, cb) => {
+      callback(task);
+      cb();
+    },
+    drain: () => {}
+  })
 }));
 
 // Mock utils
@@ -83,4 +85,4 @@ const mockHubspotClient = {
 
 jest.mock('@hubspot/api-client', () => ({
   Client: jest.fn().mockImplementation(() => mockHubspotClient)
-})); 
+}));

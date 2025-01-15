@@ -14,7 +14,7 @@ const { processCompanies, processContacts, processMeetings } = require('./proces
  * Main function to pull and process data from HubSpot
  * Handles multiple HubSpot accounts within a domain
  * Creates actions for all updated records since the last sync
- * 
+ *
  * Process flow:
  * 1. Find the domain
  * 2. For each HubSpot account:
@@ -23,7 +23,7 @@ const { processCompanies, processContacts, processMeetings } = require('./proces
  *    - Process companies
  *    - Process meetings and their attendees
  *    - Drain the action queue
- * 
+ *
  * @returns {Promise<void>}
  */
 const pullDataFromHubspot = async () => {
@@ -86,7 +86,7 @@ const pullDataFromHubspot = async () => {
 /**
  * Worker entry point
  * Initializes and starts the HubSpot data synchronization process
- * 
+ *
  * @returns {Promise<void>}
  */
 module.exports = async function startWorker() {
@@ -104,4 +104,4 @@ module.exports.setHubspotClient = require('./hubspot-client').setHubspotClient;
 module.exports.setExpirationDate = require('./hubspot-client').setExpirationDate;
 module.exports.processCompanies = processCompanies;
 module.exports.processContacts = processContacts;
-module.exports.processMeetings = processMeetings; 
+module.exports.processMeetings = processMeetings;

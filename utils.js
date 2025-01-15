@@ -14,7 +14,7 @@ const filterNullValuesFromObject = object =>
     .fromEntries(
       Object
         .entries(object)
-        .filter(([_, v]) =>
+        .filter(([, v]) =>
           v !== null &&
           v !== '' &&
           typeof v !== 'undefined' &&

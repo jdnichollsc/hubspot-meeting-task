@@ -32,12 +32,12 @@ const mockHubspotClient = {
     },
     contacts: {
       basicApi: {
-        getById: jest.fn().mockResolvedValue({ 
-          properties: { 
+        getById: jest.fn().mockResolvedValue({
+          properties: {
             email: 'test@example.com',
             firstname: 'Test',
             lastname: 'User'
-          } 
+          }
         })
       },
       searchApi: {
@@ -87,4 +87,4 @@ const mockHubspotClient = {
 
 module.exports = {
   Client: jest.fn().mockImplementation(() => mockHubspotClient)
-}; 
+};

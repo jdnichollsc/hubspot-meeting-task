@@ -1,33 +1,30 @@
 module.exports = {
   env: {
-    browser: true,
-    commonjs: true,
-    es6: true,
     node: true,
-    mocha: true
+    es2021: true,
+    jest: true
   },
-  extends: 'standard',
-  globals: {
-    Atomics: 'readonly',
-    SharedArrayBuffer: 'readonly',
-    _logger: 'readonly'
-  },
-  parser: '@babel/eslint-parser',
+  extends: ['standard'],
   parserOptions: {
-    ecmaVersion: 11,
-    requireConfigFile: false
+    ecmaVersion: 'latest',
+    sourceType: 'module'
   },
-  plugins: ['eslint-plugin-prefer-arrow'],
   rules: {
-    semi: [2, 'always'],
-    'no-warning-comments': [0, { terms: ['todo', 'fixme', 'xxx', 'debug'], location: 'start' }],
-    'prefer-arrow/prefer-arrow-functions': [2, { singleReturnOnly: true, disallowPrototype: true }],
-    'object-curly-newline': ['error', { multiline: true }],
-    'arrow-parens': [2, 'as-needed'],
-    'arrow-body-style': [2, 'as-needed'],
-    'operator-linebreak': [2, 'after'],
-    indent: ['error', 2, { ignoredNodes: ['TemplateLiteral > *'], SwitchCase: 1 }],
-    'no-unused-expressions': 0
+    // Customize rules
+    semi: ['error', 'always'],
+    'space-before-function-paren': ['error', {
+      anonymous: 'always',
+      named: 'never',
+      asyncArrow: 'always'
+    }],
+    'no-unused-vars': ['warn', {
+      vars: 'all',
+      args: 'after-used',
+      ignoreRestSiblings: true
+    }],
+    'no-console': 'off', // Since this is a backend service, console.log is acceptable
+    'comma-dangle': ['error', 'never'],
+    'quote-props': ['error', 'as-needed'],
+    'object-curly-spacing': ['error', 'always']
   }
 };
-  

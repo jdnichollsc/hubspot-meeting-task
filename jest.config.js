@@ -8,4 +8,4 @@ module.exports = {
     '/node_modules/',
     '/tests/setup.js'
   ]
-}; 
+};

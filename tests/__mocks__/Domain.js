@@ -68,4 +68,4 @@ const mockDomain = {
 // Mock the static methods
 Domain.findOne = jest.fn().mockResolvedValue(mockDomain);
 
-module.exports = Domain; 
+module.exports = Domain;

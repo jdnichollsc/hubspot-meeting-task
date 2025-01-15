@@ -9,8 +9,8 @@ const { filterNullValuesFromObject } = require('../utils');
 const BaseProcessor = require('./base-processor');
 
 class CompanyProcessor extends BaseProcessor {
-  constructor(domain, hubId, q) {
-    super(domain, hubId, q, 'companies');
+  constructor(domain, hubId, hubspotClient, q, entityType) {
+    super(domain, hubId, hubspotClient, q, entityType);
     this.properties = [
       'name',
       'domain',
@@ -59,8 +59,7 @@ class CompanyProcessor extends BaseProcessor {
     while (hasMore) {
       const searchObject = this.createSearchObject(offsetObject, this.properties);
       const searchResult = await this.fetchWithRetry(
-        searchObj => hubspotClient.crm.companies.searchApi.doSearch(searchObj),
-        searchObject
+        client => client.crm.companies.searchApi.doSearch(searchObject)
       );
 
       const data = searchResult?.results || [];
@@ -77,8 +76,8 @@ class CompanyProcessor extends BaseProcessor {
 }
 
 class ContactProcessor extends BaseProcessor {
-  constructor(domain, hubId, q) {
-    super(domain, hubId, q, 'contacts');
+  constructor(domain, hubId, hubspotClient, q, entityType) {
+    super(domain, hubId, hubspotClient, q, entityType);
     this.properties = [
       'firstname',
       'lastname',
@@ -97,7 +96,7 @@ class ContactProcessor extends BaseProcessor {
    * @returns {Promise<Object>} Map of contact ID to company ID
    */
   async fetchCompanyAssociations(contactIds) {
-    const result = await hubspotClient.apiRequest({
+    const result = await this.client.apiRequest({
       method: 'post',
       path: '/crm/v3/associations/CONTACTS/COMPANIES/batch/read',
       body: { inputs: contactIds.map(contactId => ({ id: contactId })) }
@@ -150,8 +149,7 @@ class ContactProcessor extends BaseProcessor {
     while (hasMore) {
       const searchObject = this.createSearchObject(offsetObject, this.properties, 'lastmodifieddate');
       const searchResult = await this.fetchWithRetry(
-        searchObj => hubspotClient.crm.contacts.searchApi.doSearch(searchObj),
-        searchObject
+        client => client.crm.contacts.searchApi.doSearch(searchObject)
       );
 
       const data = searchResult?.results || [];
@@ -160,7 +158,7 @@ class ContactProcessor extends BaseProcessor {
       console.log('fetch contact batch');
       const contactIds = data.map(contact => contact.id);
       const companyAssociations = await this.fetchCompanyAssociations(contactIds);
-      
+
       data.forEach(contact => this.createAction(contact, companyAssociations));
       hasMore = this.handlePagination(offsetObject, data);
     }
@@ -171,8 +169,8 @@ class ContactProcessor extends BaseProcessor {
 }
 
 class MeetingProcessor extends BaseProcessor {
-  constructor(domain, hubId, q) {
-    super(domain, hubId, q, 'meetings');
+  constructor(domain, hubId, hubspotClient, q, entityType) {
+    super(domain, hubId, hubspotClient, q, entityType);
     this.properties = [
       'hs_meeting_title',
       'hs_meeting_body',
@@ -189,7 +187,7 @@ class MeetingProcessor extends BaseProcessor {
    * @returns {Promise<Array>} Array of attendee IDs
    */
   async fetchAttendees(meetingId) {
-    const result = await hubspotClient.apiRequest({
+    const result = await this.client.apiRequest({
       method: 'get',
       path: `/crm/v3/objects/meetings/${meetingId}/associations/contacts`
     });
@@ -202,7 +200,7 @@ class MeetingProcessor extends BaseProcessor {
    * @returns {Promise<Object>} Contact details
    */
   async fetchContactDetails(contactId) {
-    return hubspotClient.crm.contacts.basicApi.getById(contactId, ['email']);
+    return this.client.crm.contacts.basicApi.getById(contactId, ['email']);
   }
 
   /**
@@ -245,8 +243,7 @@ class MeetingProcessor extends BaseProcessor {
     while (hasMore) {
       const searchObject = this.createSearchObject(offsetObject, this.properties);
       const searchResult = await this.fetchWithRetry(
-        searchObj => hubspotClient.crm.objects.meetings.searchApi.doSearch(searchObj),
-        searchObject
+        client => client.crm.objects.meetings.searchApi.doSearch(searchObject)
       );
 
       const data = searchResult?.results || [];
@@ -274,7 +271,7 @@ class MeetingProcessor extends BaseProcessor {
 
 // Export processor functions that maintain the same interface
 module.exports = {
-  processCompanies: (domain, hubId, q) => new CompanyProcessor(domain, hubId, q).process(),
-  processContacts: (domain, hubId, q) => new ContactProcessor(domain, hubId, q).process(),
-  processMeetings: (domain, hubId, q) => new MeetingProcessor(domain, hubId, q).process()
-}; 
+  processCompanies: (domain, hubId, q) => new CompanyProcessor(domain, hubId, hubspotClient, q, 'companies').process(),
+  processContacts: (domain, hubId, q) => new ContactProcessor(domain, hubId, hubspotClient, q, 'contacts').process(),
+  processMeetings: (domain, hubId, q) => new MeetingProcessor(domain, hubId, hubspotClient, q, 'meetings').process()
+};

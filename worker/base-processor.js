@@ -3,19 +3,22 @@
  * Contains common functionality for all HubSpot data processors
  */
 
-const { hubspotClient, refreshAccessToken, getExpirationDate } = require('./hubspot-client');
-const { generateLastModifiedDateFilter, saveDomain } = require('./utils');
+const { refreshAccessToken } = require('./hubspot-client');
+const { saveDomain, generateLastModifiedDateFilter } = require('./utils');
 
 class BaseProcessor {
   /**
-   * @param {Object} domain - The domain object containing HubSpot integration details
+   * Initialize the base processor with common functionality
+   * @param {Object} domain - The domain object containing integration settings
    * @param {string} hubId - The HubSpot account ID
-   * @param {Object} q - The queue for storing actions
-   * @param {string} entityType - The type of entity being processed (e.g., 'companies', 'contacts', 'meetings')
+   * @param {Object} hubspotClient - The HubSpot API client instance
+   * @param {Object} q - The queue for processing actions
+   * @param {string} entityType - The type of entity being processed
    */
-  constructor(domain, hubId, q, entityType) {
+  constructor(domain, hubId, hubspotClient, q, entityType) {
     this.domain = domain;
     this.hubId = hubId;
+    this.client = hubspotClient;
     this.q = q;
     this.entityType = entityType;
     this.account = domain.integrations.hubspot.accounts.find(account => account.hubId === hubId);
@@ -26,45 +29,24 @@ class BaseProcessor {
 
   /**
    * Fetches data from HubSpot API with retry logic
-   * @param {Function} searchFn - The search function to execute
-   * @param {Object} searchObject - The search parameters
-   * @returns {Promise<Object>} The search results
+   * @param {Function} apiCall - The HubSpot API call to execute
+   * @returns {Promise<Object>} The API response
    */
-  async fetchWithRetry(searchFn, searchObject) {
-    let tryCount = 0;
-    while (tryCount <= 4) {
-      try {
-        const result = await searchFn(searchObject);
-        return result;
-      } catch (err) {
-        tryCount++;
-        if (this.shouldRefreshToken(err)) {
-          await refreshAccessToken(this.domain, this.hubId);
-        }
-        if (tryCount <= 4) {
-          await this.wait(tryCount);
-        }
+  async fetchWithRetry(apiCall) {
+    try {
+      return await apiCall(this.client);
+    } catch (error) {
+      if (error.response && error.response.status === 429) {
+        const retryAfter = parseInt(error.response.headers['retry-after'] || '5', 10);
+        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+        return this.fetchWithRetry(apiCall);
       }
+      if (error.response && error.response.status === 401) {
+        await refreshAccessToken(this.domain, this.hubId);
+        return this.fetchWithRetry(apiCall);
+      }
+      throw error;
     }
-    throw new Error(`Failed to fetch ${this.entityType} for the 4th time. Aborting.`);
-  }
-
-  /**
-   * Checks if token refresh is needed based on error
-   * @param {Error} err - The error from HubSpot API
-   * @returns {boolean}
-   */
-  shouldRefreshToken(err) {
-    return new Date() > getExpirationDate() || (err.response && err.response.status === 401);
-  }
-
-  /**
-   * Waits with exponential backoff
-   * @param {number} tryCount - The current retry attempt
-   * @returns {Promise<void>}
-   */
-  async wait(tryCount) {
-    return new Promise(resolve => setTimeout(resolve, 5000 * Math.pow(2, tryCount)));
   }
 
   /**
@@ -94,18 +76,22 @@ class BaseProcessor {
    * @returns {boolean} Whether there is more data to fetch
    */
   handlePagination(offsetObject, data) {
-    if (!offsetObject?.after) {
+    // If no data or no next page, we're done
+    if (!data.length || !offsetObject?.after) {
       return false;
-    } else if (offsetObject?.after >= 9900) {
+    }
+    // HubSpot's limit is 10,000 records per request
+    if (offsetObject.after >= 9900) {
+      // Reset pagination and use last record's date as new start date
       offsetObject.after = 0;
-      offsetObject.lastModifiedDate = new Date(data[data.length - 1].updatedAt).valueOf();
+      const lastRecord = data[data.length - 1];
+      offsetObject.lastModifiedDate = new Date(lastRecord.properties?.hs_lastmodifieddate || lastRecord.updatedAt).valueOf();
     }
     return true;
   }
 
   /**
-   * Updates the last pulled date and saves the domain
-   * @returns {Promise<void>}
+   * Updates the last pulled date for the entity type
    */
   async updateLastPulledDate() {
     this.account.lastPulledDates[this.entityType] = this.now;
@@ -132,4 +118,4 @@ class BaseProcessor {
   }
 }
 
-module.exports = BaseProcessor; 
+module.exports = BaseProcessor;

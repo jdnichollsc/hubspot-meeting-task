@@ -1,5 +1,4 @@
 const worker = require('../worker');
-const { filterNullValuesFromObject } = require('../utils');
 const hubspot = require('@hubspot/api-client');
 
 // Increase Jest timeout for all tests
@@ -21,7 +20,7 @@ describe('HubSpot Data Processing', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     realDate = global.Date;
-    
+
     actions = [];
     mockQueue = {
       push: jest.fn((action) => actions.push(action)),
@@ -67,6 +66,7 @@ describe('HubSpot Data Processing', () => {
         constructor() {
           return mockDate;
         }
+
         static now() {
           return mockDate.getTime();
         }
@@ -94,7 +94,7 @@ describe('HubSpot Data Processing', () => {
       // Mock token expired error and subsequent success
       const tokenError = new Error('Token expired');
       tokenError.response = { status: 401 };
-      
+
       mockHubspotClient.crm.objects.meetings.searchApi.doSearch
         .mockRejectedValueOnce(tokenError)
         .mockResolvedValueOnce({
@@ -115,13 +115,13 @@ describe('HubSpot Data Processing', () => {
 
       // Execute and advance timers
       const processPromise = worker.processMeetings(mockDomainWithExpiredToken, 'test-hub-id', mockQueue);
-      
+
       // Advance timers multiple times to handle all async operations
       for (let i = 0; i < 10; i++) {
         jest.advanceTimersByTime(5000);
         await Promise.resolve(); // Let any pending promises resolve
       }
-      
+
       await processPromise;
 
       // Verify token refresh was called
@@ -220,13 +220,13 @@ describe('HubSpot Data Processing', () => {
 
       // Execute and advance timers
       const processPromise = worker.processMeetings(mockDomain, 'test-hub-id', mockQueue);
-      
+
       // Advance timers multiple times to handle all async operations
       for (let i = 0; i < 10; i++) {
         jest.advanceTimersByTime(1000);
         await Promise.resolve(); // Let any pending promises resolve
       }
-      
+
       await processPromise;
 
       expect(actions).toHaveLength(1);
@@ -275,4 +275,4 @@ describe('HubSpot Data Processing', () => {
       });
     });
   });
-}); 
+});

@@ -34,7 +34,7 @@ const setExpirationDate = (date) => {
  * Refreshes the HubSpot access token when it expires
  * Uses the refresh token to obtain a new access token
  * Updates the client and domain with the new token
- * 
+ *
  * @param {Object} domain - The domain object containing HubSpot integration details
  * @param {string} hubId - The HubSpot account ID
  * @returns {Promise<boolean>} - Resolves to true if token refresh is successful
@@ -67,4 +67,4 @@ module.exports = {
   setExpirationDate,
   refreshAccessToken,
   getExpirationDate: () => expirationDate
-}; 
+};
