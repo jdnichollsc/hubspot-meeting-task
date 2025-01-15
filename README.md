@@ -40,7 +40,7 @@ This service integrates with HubSpot's CRM API to synchronize company and contac
    npm install
    
    # Setup environment
-   cp .env.example .env
+   npm run setup
    ```
 
 3. **Configuration**
@@ -51,11 +51,20 @@ This service integrates with HubSpot's CRM API to synchronize company and contac
 
 4. **Running the Service**
    ```bash
-   # Start the main application
-   node app.js
+   # Start the application
+   npm start
    
-   # In a separate terminal, run the worker
-   node worker.js
+   # Run the worker service
+   npm run worker
+   
+   # Run tests
+   npm test                  # Run all tests
+   npm run test:watch        # Run tests in watch mode
+   npm run test:coverage     # Run tests with coverage report
+   
+   # Linting
+   npm run lint             # Check code style
+   npm run lint:fix         # Fix code style issues automatically
    ```
 
 ## Project Structure
