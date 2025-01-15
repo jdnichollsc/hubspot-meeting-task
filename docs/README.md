@@ -7,7 +7,6 @@ Welcome to the HubSpot Integration project documentation. This documentation wil
 1. [Getting Started](guides/getting-started.md)
 2. [Architecture Overview](architecture/overview.md)
 3. [API Documentation](api/hubspot-api.md)
-4. [Data Flow](architecture/data-flow.md)
 
 ## Project Overview
 
