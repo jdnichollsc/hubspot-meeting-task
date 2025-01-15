@@ -34,16 +34,29 @@ Comprehensive documentation is available in the [docs](docs) directory:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/hubspot-integration-service.git
+git clone https://github.com/jdnichollsc/hubspot-meeting-task
 
 # Install dependencies
 npm install
 
-# Set up environment variables
-cp .env.example .env
+# Setup environment variables
+npm run setup
 
-# Start the service
-node app.js
+# Start the application
+npm start
+
+# Run the HubSpot sync worker
+npm run worker
+```
+
+## 🛠 Development
+
+```bash
+# Lint your code
+npm run lint
+
+# Fix linting issues
+npm run lint:fix
 ```
 
 ## 📝 License
